@@ -41,9 +41,6 @@ GIT FLOW and gitlab flow (probably used in our org)
 * What is the difference between `git reset` and `git revert`?
 * What is `git diff` used for?
 * What is `git log` used for?
-* What is HEAD in Git?
-* What is a detached HEAD state?
-* What is the difference between `git checkout` and `git switch`?
 * What is a fast-forward merge?
 * What is squash merge?
 * What is the purpose of Git tags?

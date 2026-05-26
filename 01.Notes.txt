@@ -102,21 +102,50 @@ Example:
 ------------------------------------------------------------------------------------
 What is a detached HEAD state?
 
-- A detached HEAD state happens when HEAD points directly to a commit
-  instead of pointing to a branch.
-- This usually occurs when checking out a specific commit
+Normal state:
+    HEAD -> main -> Commit C
 
-Example:
-    git checkout abc123
+                                A --- B --- C
+                                            ^
+                                          main
+                                            ^
+                                          HEAD
 
-In this state:
-- new commits are not attached to a branch unless you create one.
-- If you switch away, those commits may become hard to find.
 
-To save work from detached HEAD:
-    git checkout -b new-branch
-    or
-    git switch -c new-branch
+Detached HEAD state:
+
+                                A --- B --- C
+                                            ^
+                                          HEAD
+
+- Here, HEAD points directly to Commit C instead of pointing to the `main` branch.
+  This usually happens when checking out a specific commit:
+  git checkout abc123
+
+What happens next?
+
+    A --- B --- C
+                \
+                  D
+                  ^
+                 HEAD
+
+- You can create new commits.
+- But commit D is not attached to any branch.
+- If you move away from this state,
+  commit D may become hard to find.
+
+To save the work:
+
+    git switch -c new-branch  OR  git checkout -b new-branch
+
+Result:
+
+    A --- B --- C --- D
+                        ^
+                    new-branch
+                        ^
+                       HEAD
 
 ------------------------------------------------------------------------------------
 What is the difference between `git checkout` and `git switch`?
