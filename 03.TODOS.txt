@@ -1,14 +1,36 @@
 # Basic Git Interview Questions (Most Frequently Asked)
 
-* What is Git?
-* What is the difference between Git and GitHub/GitLab?
-* What is a version control system?
-* What is the difference between centralized and distributed version control systems?
-* What is `git clone`?
-* What is `git init`?
-* What is the purpose of `git add`?
-* What is the purpose of `git commit`?
-* What is the purpose of `git push`?
+BRANCHING STRATEGY AT CURRENT ORGANISATION
+/*
+Our team follows an environment-based branching and deployment flow.
+
+Developers usually work on feature branches and merge changes into 
+the development branch after review and validation.
+
+The deployment pipeline promotes builds across multiple environments:
+
+dev -> feature-int -> prod-int -> prod
+
+- dev:
+  Initial development and basic validation.
+
+- feature-int:
+  Integration testing environment where multiple features are 
+  validated together.
+
+- prod-int:
+  Pre-production/staging environment used for regression, 
+  stability, and release validation.
+
+- prod:
+  Production release environment.
+
+Automation suites are executed across these environments through 
+GitLab CI pipelines to ensure stability before production release.
+*/
+
+GIT FLOW and gitlab flow (probably used in our org)
+
 * What is the difference between `git pull` and `git fetch`?
 * What is the difference between `git merge` and `git rebase`?
 * What is a merge conflict?
@@ -16,26 +38,16 @@
 * What is `.gitignore`?
 * What is `git stash`?
 * What is `git cherry-pick`?
-* What is the difference between local and remote branches?
-* What is a pull request (PR) / merge request (MR)?
-* What is branching in Git?
-* What is the purpose of branching?
-* What is the default branch in Git?
 * What is the difference between `git reset` and `git revert`?
 * What is `git diff` used for?
 * What is `git log` used for?
 * What is HEAD in Git?
 * What is a detached HEAD state?
-* What is the difference between working directory, staging area, and repository?
-* What happens internally during `git commit`?
 * What is the difference between `git checkout` and `git switch`?
 * What is a fast-forward merge?
 * What is squash merge?
 * What is the purpose of Git tags?
-* What is the difference between clone and fork?
 * What is the difference between tracked and untracked files?
-* How do you delete a branch locally and remotely?
-* How do you rename a branch?
 * How do you undo the last commit?
 * How do you undo uncommitted changes?
 * What happens if two people modify the same file?
