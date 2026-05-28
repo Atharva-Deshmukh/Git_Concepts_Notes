@@ -40,7 +40,6 @@ GIT FLOW and gitlab flow (probably used in our org)
 * What is `git cherry-pick`?
 * What is the difference between `git reset` and `git revert`?
 * What is `git diff` used for?
-* What is `git log` used for?
 * What is a fast-forward merge?
 * What is squash merge?
 * What is the purpose of Git tags?

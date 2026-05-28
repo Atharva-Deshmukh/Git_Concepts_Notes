@@ -1,25 +1,19 @@
-What is Git?
-
-- A distributed version control system used to track changes in code, manage collaboration and maintain versions
+Git: Distributed version control system used to track changes in code
 
 ------------------------------------------------------------------------------------
-What is the difference between Git and GitHub/GitLab?
+ Git Vs GitHub/GitLab?
 
               Git -->  version control system used locally.
 GitHub and GitLab -->  are cloud-based platforms that host Git repositories.
 
 ------------------------------------------------------------------------------------
-What is a version control system?
-
-- A tool that manages multiple versions of code safely, tracks changes, allowing teams to collaborate
- and can revert changes.
+Version control system: A tool that manages multiple versions of code, tracks changes, allowing teams to collaborate.
 
 ------------------------------------------------------------------------------------
-What is the difference between centralized and distributed version control systems?
+(CVCS) and (DVCS)
 
 Centralized version control system (CVCS):
-- there is a single central server that stores all versions of the code, and users 
-  depend on that server. 
+- there is a single central server that stores all versions of the code, and users  depend on that server. 
 - They need to connect to that server to get latest changes
 - Online work is there, no offline scope
 
@@ -28,21 +22,122 @@ Centralized version control system (CVCS):
     - Perforce
       Generally old legacy systems used these.
 
-- Distributed version control system (DVCS): 
-- every user has a complete local copy of the repository and its history, enabling 
-  offline work and better collaboration.
+Distributed version control system (DVCS): 
+- every user has a complete local copy of the repository and its history, 
+- enables offline work and better collaboration.
 
   Ex: Git
 
 ------------------------------------------------------------------------------------
 What is branching in Git?
+
 - Creating an independent line of development inside a repository. 
+- A branch is not actually a collection of commits.
+- A branch is just a named pointer (reference) to one commit — usually the latest commit in a line of development.
+
+  A --- B --- C
+                ^
+              main
+
+            main is just a label storing: main = commit C
+            Nothing more.
+
+            Commit C itself stores a pointer to B.
+            Commit B stores a pointer to A.
+
+            So Git walks backward through history.
+
+------------------------------------------------------------------------------------
+What is HEAD in Git?
+
+- HEAD is a pointer/reference to the currently checked-out commit.
+- Usually, HEAD points to a branch (like `main` or `feature/login`), and that branch points to the latest commit.
+- When you create a new commit, the branch moves forward, and HEAD moves with it.
+
+Example:
+    HEAD -> main -> commit abc123
+
+------------------------------------------------------------------------------------
+
+What is a detached HEAD state?
+
+  When we checkout a commit directly: git checkout <commit-hash>
+  HEAD no longer points to a branch.
+
+  Instead: HEAD -> C directly.
+
+  So now:
+
+    A --- B --- C
+                ^
+               HEAD
+
+  No branch name is involved.
+
+                                      Why new commits become “dangling”?
+
+  If you commit now:
+
+    A --- B --- C --- D
+                        ^
+                      HEAD
+
+  Git creates commit D, and HEAD moves to it.
+  But no branch points to D.
+
+  Normally you'd have: main -> D
+
+  But in detached HEAD: HEAD -> D only temporarily.
+
+
+SOLUTION: If you detached HEAD by checking out an older commit, you can move back to the latest commit simply by
+checking out a branch again.
+
+Example situation:
+
+                                A --- B --- C   main
+                                      ^
+                                    HEAD
+
+You checked out commit B, so HEAD is detached.
+
+To return to the latest commit on main (C):
+    git switch main
+or older syntax:
+    git checkout main
+
+Now:
+
+                                  A --- B --- C
+                                                ^
+                                              main
+                                                ^
+                                              HEAD
+
+HEAD is attached again.
+
+If you made commits while detached:
+
+                                  A --- B --- C
+                                        \
+                                          D
+                                          ^
+                                        HEAD
+
+Then switching to main leaves D unreferenced.
+
+To keep it: git switch -c new-branch 
+before leaving detached HEAD.
+
+
+Quick way to return to previous branch: git switch -
+This switches back to the branch you were on before.
 
 ------------------------------------------------------------------------------------
 What is the purpose of branching?
 
-  - Allow multiple developers to work simultaneously and experiment
-  - Keep the main branch unaffected and production ready always
+  - Allow Collaboration
+  - Keep the main branch unaffected and PROD ready
 
 ------------------------------------------------------------------------------------
 What is the default branch in Git?
@@ -51,9 +146,9 @@ What is the default branch in Git?
   Modern Git repositories after 2020 -->  "main"
 
 ------------------------------------------------------------------------------------
-What is the difference between local and remote branches?
+local Vs remote branches
 
-  Local Branch --> Exists only on uers's computer
+  Local Branch  --> Exists only on uers's computer
   Remote Branch --> Exists on a remote repository like GitHub and shared with all users
                     They are stored on server end
 
@@ -64,11 +159,23 @@ How do you delete a branch locally and remotely?
   Force delete a local branch --> git branch -D branch_name
        Delete a remote branch --> git push origin --delete branch_name
 
+       -d -> allows deletion if the branch has already been fully merged
+             means, all commits of <source_branch> must be at the <target_branch>
+
+            ex: 
+
+              git checkout main
+              git merge feature-login
+
+              After this merge, Git considers feature-login fully merged, so this works: git branch -d feature-login
+
+      -D -> Deletes the branch even if it contains unmerged changes.
+
 ------------------------------------------------------------------------------------
 How do you rename a branch?
 
-  Rename the current branch --> git branch -m <new_branch_name>
-      Rename another branch --> git branch -m <old_branch_name> <new_branch_name>
+  Current branch --> git branch -m <new_branch_name>
+  Another branch --> git branch -m <old_branch_name> <new_branch_name>
 
 ------------------------------------------------------------------------------------
 What is the difference between clone and fork?
@@ -87,66 +194,6 @@ What happens internally during `git commit`?
   4. Generates a unique commit hash (SHA)
   5. HEAD moves to the latest commit
   
-------------------------------------------------------------------------------------
-What is HEAD in Git?
-
-- HEAD is a pointer/reference to the currently checked-out commit.
-- Usually, HEAD points to a branch (like `main` or `feature/login`),
-  and that branch points to the latest commit.
-- When you create a new commit, the branch moves forward, and HEAD
-  moves with it.
-
-Example:
-    HEAD -> main -> commit abc123
-
-------------------------------------------------------------------------------------
-What is a detached HEAD state?
-
-Normal state:
-    HEAD -> main -> Commit C
-
-                                A --- B --- C
-                                            ^
-                                          main
-                                            ^
-                                          HEAD
-
-
-Detached HEAD state:
-
-                                A --- B --- C
-                                            ^
-                                          HEAD
-
-- Here, HEAD points directly to Commit C instead of pointing to the `main` branch.
-  This usually happens when checking out a specific commit:
-  git checkout abc123
-
-What happens next?
-
-    A --- B --- C
-                \
-                  D
-                  ^
-                 HEAD
-
-- You can create new commits.
-- But commit D is not attached to any branch.
-- If you move away from this state,
-  commit D may become hard to find.
-
-To save the work:
-
-    git switch -c new-branch  OR  git checkout -b new-branch
-
-Result:
-
-    A --- B --- C --- D
-                        ^
-                    new-branch
-                        ^
-                       HEAD
-
 ------------------------------------------------------------------------------------
 What is the difference between `git checkout` and `git switch`?
 
@@ -179,5 +226,15 @@ Modern recommendation:
 - Use `git switch` for changing branches.
 - Use `git restore` for restoring files.
 - Use `git checkout` mainly for older workflows or compatibility.
+
+------------------------------------------------------------------------------------
+What is `git log` used for?
+
+used to view the commit history of a Git repository. It displays commit IDs, authors, dates, and commit messages.
+
+Examples:
+git log               → Shows detailed commit history.
+git log --oneline     → Shows a compact one-line history.
+git log --graph --all → Displays commit history in graph form.
 
 ------------------------------------------------------------------------------------
