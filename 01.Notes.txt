@@ -292,3 +292,247 @@ git log --oneline     → Shows a compact one-line history.
 git log --graph --all → Displays commit history in graph form.
 
 ------------------------------------------------------------------------------------
+What is `git diff` used for?
+
+- Used to view the differences (changes) between files, commits, branches
+
+| Command                          | Description                             |
+|----------------------------------|-----------------------------------------|
+| git diff                         | Shows unstaged changes.                 |
+| git diff --staged                | Shows staged changes.                   |
+| git diff HEAD                    | Shows all changes since the last commit.|
+| git diff commit1 commit2         | Compares two commits.                   |
+| git diff branch1 branch2         | Compares two branches.                  |
+| git diff filename                | Shows changes in a specific file.       |
+
+------------------------------------------------------------------------------------
+git pull vs git fetch
+
+| Feature                | git fetch                                                      | git pull                                                         |
+|-------------------------|----------------------------------------------------------------|------------------------------------------------------------------|
+| Purpose                 | Downloads latest changes from remote repository.              | Downloads and integrates latest changes from remote repository. |
+| Updates Local Branch    | No                                                            | Yes                                                              |
+| Merges Changes          | No                                                            | Yes (by default)                                                 |
+| Safe for Inspection     | Yes                                                           | Less safe because it modifies the current branch.                |
+| Working Directory       | Remains unchanged.                                            | May change after merge/rebase.                                   |
+| Typical Use Case        | Review remote changes before applying them.                   | Directly update your local branch with remote changes.           |
+
+Ex.
+
+              Remote Repository: A --- B --- C (origin/main)
+              Local Repository:  A --- B (main)
+
+                                        git fetch origin
+
+Local Branch:
+    A --- B (main)
+
+Remote Tracking Branch:
+    A --- B --- C (origin/main)
+
+What happens?
+- Commit C is downloaded.
+- Local branch still remains at B.
+- You can inspect changes before merging.
+
+Useful commands after fetch:
+
+    git log main..origin/main -> to see the commit differences
+    git diff main origin/main -> to see the actual File   changes
+
+
+To merge these changes now, use git merge <branchname>
+
+
+                                          git pull origin main
+
+Result:
+
+A --- B --- C (main)
+
+What happens?
+- Downloads commit C.
+- Automatically merges (or rebases, depending on configuration).
+- Your local branch is updated immediately.
+
+git pull = git fetch + git merge
+
+------------------------------------------------------------------------------------
+GIT MERGE vs GIT REBASE
+
+MERGE  = Combine Histories
+REBASE = Rewrite History
+
+                                        GIT MERGE
+
+- Creates a new "merge commit" that combines the histories of two branches.
+
+Ex:
+
+Initial History:
+
+                          A---B---C  master
+                              \
+                                D---E  feature
+
+Commands:
+  git checkout master
+  git merge feature
+
+Result:
+
+                        A---B---C-------M  master
+                            \          /
+                              D---E---/    feature
+
+M = Merge Commit
+
+Characteristics:
+- Preserves complete branch history.
+- Shows exactly when branches were merged.
+- Non-destructive (does not rewrite commit history).
+- Preferred for shared/public branches.
+
+
+                                          GIT REBASE
+
+- Moves (replays) commits from one branch onto another base commit.
+
+Ex:
+
+Initial History:
+
+                              A---B---C  master
+                                  \
+                                    D---E  feature
+
+Command:
+  git checkout feature
+  git rebase master
+
+Result:
+
+                            A---B---C  master
+                                      \
+                                        D'---E'  feature
+
+D' and E' are NEW commits recreated on top of C.
+- Git is not literally shifting the same commits. It is creating new commits that contain the same changes.
+
+After merging:
+  git checkout master
+  git merge feature
+
+Result:
+
+A---B---C---D'---E'  master
+
+(No merge commit needed)
+
+Characteristics:
+- Produces a linear history.
+- Rewrites commit history.
+- Creates new commit hashes.
+
+Disadvantages:
+- Rewrites history.
+
+                                    Why is this dangerous?
+
+- The danger appears when the branch is shared.
+
+Ex:
+
+Before rebase
+
+Remote:
+  A---B---D---E  feature
+
+Alice and Bob both have this branch.
+
+Alice: feature -> E
+Bob:   feature -> E
+
+Alice rebases
+  git rebase master
+  git push --force
+
+Remote becomes:
+  A---B---C---D'---E'  feature
+
+Now Bob still has:
+  A---B---D---E
+
+while remote has:
+  A---B---C---D'---E'
+
+Git sees D,E and D',E' as completely different commits.
+
+When Bob tries git pull, he gets conflicts
+
+Suppose Bob created another commit:
+  A---B---D---E---F  (Bob)
+
+Meanwhile remote is:
+  A---B---C---D'---E'  (origin)
+
+Now Git cannot simply fast-forward.
+
+Bob may need:
+  git fetch
+  git rebase origin/feature
+  or reset/cherry-pick work manually.
+  On large teams, this can become messy.
+
+Rule of thumb
+
+✅ Safe to rebase:
+
+Your own local branch.
+A feature branch nobody else is using.
+Before opening a pull request (depending on team workflow).
+
+❌ Usually avoid rebasing:
+
+Shared branches.
+Branches others have already pulled.
+main / master on a collaborative project.
+
+A common saying is:
+
+"Rebase private history, merge public history."
+
+The danger isn't that code changes are lost; it's that commit identities change, and anyone who was relying on the old commit chain now has a different history than the repository.
+
+------------------------------------------------------------------------------------
+What is a merge conflict?
+
+- Occurs when Git cannot automatically combine changes
+  from two branches because the same part of a file has been modified differently.
+
+------------------------------------------------------------------------------------
+How do you resolve merge conflicts?
+
+- Must manually choose the correct content, mark the file
+  as resolved, and then complete the merge or rebase process.
+
+------------------------------------------------------------------------------------
+What is a squash merge?
+
+- Combines all commits from a feature branch into a single commit before merging it into the target branch.
+
+Before squash merge:
+
+                    A---B---C  master
+                        \
+                          D---E---F  feature
+
+Commands:
+  git checkout master
+  git merge --squash feature
+  git commit
+
+After squash merge:
+
+                  A---B---C---G  master
+------------------------------------------------------------------------------------
