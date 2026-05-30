@@ -29,6 +29,60 @@ Distributed version control system (DVCS):
   Ex: Git
 
 ------------------------------------------------------------------------------------
+What is `.gitignore`?
+
+A special file used in Git to specify which files and folders should be ignored (not tracked) by Git.
+
+Why use it?
+- Avoids uploading sensitive files such as passwords, API keys, or environment variables.
+
+Example:
+
+# Ignore node_modules folder
+node_modules/
+
+# Ignore environment file
+.env
+
+# Ignore build output
+dist/
+build/
+
+------------------------------------------------------------------------------------
+Tracked Vs Untracked files?
+
+Tracked Files:
+- Files that Git is already monitoring (detects changes).
+
+Untracked Files:
+- Files that exist in the working directory but are not being monitored by Git.
+
+------------------------------------------------------------------------------------
+How do you undo the last commit?
+
+                                    git reset --soft HEAD~1
+
+- Removes the commit but Keeps the changes staged
+- Used when we have to edit the last commit message or changes
+
+                                      git reset HEAD~1
+
+- Removes the commit and unstages those changes
+- Changes can be seen using git status
+
+                                    git reset --hard HEAD~1
+
+- Removes the commit and discard all changes
+- HEAD is moved to previous commit
+
+------------------------------------------------------------------------------------
+How do you undo uncommitted changes?
+
+Undo changes in a specific file --> git restore filename
+Undo changes in all tracked files --> git restore .
+git restore app.js --> This restores app.js to its last committed state.
+
+------------------------------------------------------------------------------------
 What is branching in Git?
 
 - Creating an independent line of development inside a repository. 

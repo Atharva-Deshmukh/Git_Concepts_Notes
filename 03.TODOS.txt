@@ -35,7 +35,6 @@ GIT FLOW and gitlab flow (probably used in our org)
 * What is the difference between `git merge` and `git rebase`?
 * What is a merge conflict?
 * How do you resolve merge conflicts?
-* What is `.gitignore`?
 * What is `git stash`?
 * What is `git cherry-pick`?
 * What is the difference between `git reset` and `git revert`?
@@ -43,9 +42,6 @@ GIT FLOW and gitlab flow (probably used in our org)
 * What is a fast-forward merge?
 * What is squash merge?
 * What is the purpose of Git tags?
-* What is the difference between tracked and untracked files?
-* How do you undo the last commit?
-* How do you undo uncommitted changes?
 * What happens if two people modify the same file?
 * How does Git integrate with CI/CD pipelines?
 
