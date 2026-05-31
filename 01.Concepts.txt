@@ -622,13 +622,205 @@ Result:
                   feature:
                       A --- B --- C --- D --- E
 
-D' is a new commit on main with the same changes as D, but a different
-commit hash.
+D' is a new commit on main with the same changes as D, but a different commit hash.
 
 OTHER COMMANDS:
-
-Cherry-picking multiple commits --> git cherry-pick commit1 commit2
-
-Or a range                      --> git cherry-pick A..D
+- Cherry-picking multiple commits --> git cherry-pick commit1 commit2
+- A range of commits              --> git cherry-pick A..D
 
 ------------------------------------------------------------------------------------
+git reset vs git revert?
+
+git reset:
+- moves the branch pointer to a previous commit, this can rewrite history
+- typically used for local commits
+- Risky on shared branches because others may already have those commits.
+
+git revert:
+- creates a new commit that reverses the changes of an earlier commit without modifying history
+- safer for shared branches
+- Original commit remains visible.
+- Commonly used after commits have been pushed.
+
+                                              git reset
+
+A --- B --- C --- D   (HEAD)
+
+git reset --hard B
+
+A --- B   (HEAD)
+
+                                              git revert
+
+
+A --- B --- C --- D   (HEAD)
+
+git revert D
+
+A --- B --- C --- D --- E   (HEAD)
+
+Where E contains the opposite changes of D.
+
+------------------------------------------------------------------------------------
+How does Git integrate with CI/CD pipelines?
+
+- by serving as the source-control system that triggers automated workflows whenever code is pushed,
+  merged, or tagged
+- CI tools ->  build and test the code,
+- CD tools ->  deploy validated changes to staging or production environments
+
+                          Developer creates Pull Request
+                                      |
+                                      v
+                          CI Pipeline Runs
+                                      |
+                              -----------------
+                              |               |
+                          Tests Pass     Tests Fail
+                              |               |
+                              v               v
+                          Merge PR       Fix Issues
+                              |
+                              v
+                          CD Pipeline Deploys
+
+------------------------------------------------------------------------------------
+Branch protection:
+- a Git repository feature that prevents direct or unsafe changes to important branches such as main/master
+- purpose is to prevent accidental changes
+
+Common Branch Protection Rules: 
+
+1. Prevent Direct Pushes
+- Developers cannot push directly to the protected branch.
+- Instead, they use a feature branch and a Pull Request (PR).
+- The Pull Request goes through:
+    Code review
+    CI/CD checks
+    Approval process
+
+After all checks pass, GitHub/GitLab/Bitbucket performs the merge.
+
+2. Restrict Branch Deletion -> Prevents accidental deletion of important branches.
+
+------------------------------------------------------------------------------------
+What is the purpose of Git tags?
+
+- used to mark specific commits as important milestones, typically releases or version points.
+- make it easy to identify and return to a particular version of the codebase.
+
+A --- B --- C --- D --- E
+
+Suppose commit D is the first production release.
+
+git tag v1.0.0 D
+
+A --- B --- C --- D(v1.0.0) --- E
+
+Now you can easily reference that release.
+
+------------------------------------------------------------------------------------ 
+Gitflow and Gitlab flow
+
+- They are basically the branching models on github and gitlab
+
+                                                Gitflow
+
+Main branches:
+
+    main/master
+    develop
+
+Supporting branches:
+
+    feature/*
+    release/*
+    hotfix/*
+
+Structure:
+
+                                              feature/login
+                                            /
+                            main -------- develop -------- feature/payment
+                                            \
+                                            release/1.0
+                                                \
+                                                  hotfix/1.0.1
+
+How it works
+
+1. Create feature branch from develop
+
+    develop
+       |
+       +--> feature/login
+
+2. Complete feature and merge back to develop
+
+3. When preparing a release:
+
+    develop
+       |
+       +--> release/1.0
+
+4. After testing:
+
+    release/1.0
+         |           
+         +--> main                   --. merge in both main and develop branches
+         +--> develop
+
+5. Production bug?
+
+    main
+      |
+      +--> hotfix/1.0.1
+
+After fix:
+
+    hotfix
+      |
+      +--> main      (fix production immediately)
+      +--> develop   (keep future releases consistent)
+
+
+                                        Gitlab flow
+                                  
+- Every branch is taken from main Branch
+
+                            Feature Branch
+                                  |
+                                  v
+                            Merge Request
+                                  |
+                                  v
+                              CI/CD
+                                  |
+                                  v
+                                main
+                                  |
+                                  v
+                              Production
+
+------------------------------------------------------------------------------------  
+BRANCHING STRATEGY AT THE CURRENT ORGANISATION
+
+
+- Environment-based branching and deployment flow.
+
+- Developers usually work on feature branches and merge changes into 
+  the development branch after review and validation.
+
+- The deployment pipeline ==> dev -> feature-int -> prod-int -> prod
+
+- dev --> Initial development and basic validation.
+
+- feature-int: --> Integration testing environment where multiple features are 
+                   validated together.
+
+- prod-int:    --> Pre-production/staging environment used for regression, 
+                   stability, and release validation.
+
+- prod:        --> Production release environment.
+
+------------------------------------------------------------------------------------  
