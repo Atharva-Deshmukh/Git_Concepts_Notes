@@ -58,21 +58,49 @@ Untracked Files:
 - Files that exist in the working directory but are not being monitored by Git.
 
 ------------------------------------------------------------------------------------
+git reset vs git revert?
+
+git reset:
+- moves the branch pointer to a previous commit, this can rewrite history
+- typically used for local commits
+- Risky on shared branches because others may already have those commits.
+
+                        A --- B --- C --- D   (HEAD)
+
+                        git reset --hard B
+
+                        A --- B   (HEAD)
+
+git revert:
+- creates a new commit that reverses the changes of an earlier commit without modifying history
+- safer for shared branches
+- Original commit remains visible.
+- Commonly used after commits have been pushed.
+
+                      A --- B --- C --- D   (HEAD)
+
+                      git revert D
+
+                      A --- B --- C --- D --- E   (HEAD)
+
+                      Where E contains the opposite changes of D.
+
+------------------------------------------------------------------------------------
 How do you undo the last commit?
 
                                     git reset --soft HEAD~1
 
-- Removes the commit but Keeps the changes staged
+- Removes the commit + Keeps the changes staged
 - Used when we have to edit the last commit message or changes
 
                                       git reset HEAD~1
 
-- Removes the commit and unstages those changes
+- Removes the commit + unstages those changes
 - Changes can be seen using git status
 
                                     git reset --hard HEAD~1
 
-- Removes the commit and discard all changes
+- Removes the commit + discard all changes
 - HEAD is moved to previous commit
 
 ------------------------------------------------------------------------------------
@@ -87,7 +115,7 @@ What is branching in Git?
 
 - Creating an independent line of development inside a repository. 
 - A branch is not actually a collection of commits.
-- A branch is just a named pointer (reference) to one commit — usually the latest commit in a line of development.
+- Its just a named pointer (reference) to one commit — usually the latest commit in a line of development.
 
   A --- B --- C
                 ^
@@ -156,9 +184,7 @@ Example situation:
 You checked out commit B, so HEAD is detached.
 
 To return to the latest commit on main (C):
-    git switch main
-or older syntax:
-    git checkout main
+    git switch main OR git checkout main
 
 Now:
 
@@ -182,10 +208,6 @@ Then switching to main leaves D unreferenced.
 
 To keep it: git switch -c new-branch 
 before leaving detached HEAD.
-
-
-Quick way to return to previous branch: git switch -
-This switches back to the branch you were on before.
 
 ------------------------------------------------------------------------------------
 What is the purpose of branching?
@@ -249,7 +271,7 @@ What happens internally during `git commit`?
   5. HEAD moves to the latest commit
   
 ------------------------------------------------------------------------------------
-What is the difference between `git checkout` and `git switch`?
+`git checkout` vs `git switch`?
 
                                 `git checkout`
 
@@ -267,10 +289,6 @@ Examples:
 
 - Used only for switching branches.
 
-Key Difference:
-- `git checkout` = multi-purpose command
-- `git switch` = branch switching only
-
 Switch to an existing branch       --> git switch <branch-name>
 Create and switch to a new branch  --> git switch -c <new-branch-name>
 Toggle back to the previous branch --> git switch -
@@ -279,7 +297,6 @@ Toggle back to the previous branch --> git switch -
 Modern recommendation:
 - Use `git switch` for changing branches.
 - Use `git restore` for restoring files.
-- Use `git checkout` mainly for older workflows or compatibility.
 
 ------------------------------------------------------------------------------------
 What is `git log` used for?
@@ -338,7 +355,7 @@ What happens?
 Useful commands after fetch:
 
     git log main..origin/main -> to see the commit differences
-    git diff main origin/main -> to see the actual File   changes
+    git diff main origin/main -> to see the actual File changes
 
 
 To merge these changes now, use git merge <branchname>
@@ -439,19 +456,12 @@ Disadvantages:
 
                                     Why is this dangerous?
 
-- The danger appears when the branch is shared.
-
-Ex:
-
-Before rebase
+- When the branch is shared.
 
 Remote:
   A---B---D---E  feature
 
 Alice and Bob both have this branch.
-
-Alice: feature -> E
-Bob:   feature -> E
 
 Alice rebases
   git rebase master
@@ -467,42 +477,7 @@ while remote has:
   A---B---C---D'---E'
 
 Git sees D,E and D',E' as completely different commits.
-
 When Bob tries git pull, he gets conflicts
-
-Suppose Bob created another commit:
-  A---B---D---E---F  (Bob)
-
-Meanwhile remote is:
-  A---B---C---D'---E'  (origin)
-
-Now Git cannot simply fast-forward.
-
-Bob may need:
-  git fetch
-  git rebase origin/feature
-  or reset/cherry-pick work manually.
-  On large teams, this can become messy.
-
-Rule of thumb
-
-✅ Safe to rebase:
-
-Your own local branch.
-A feature branch nobody else is using.
-Before opening a pull request (depending on team workflow).
-
-❌ Usually avoid rebasing:
-
-Shared branches.
-Branches others have already pulled.
-main / master on a collaborative project.
-
-A common saying is:
-
-"Rebase private history, merge public history."
-
-The danger isn't that code changes are lost; it's that commit identities change, and anyone who was relying on the old commit chain now has a different history than the repository.
 
 ------------------------------------------------------------------------------------
 What is a merge conflict?
@@ -627,39 +602,6 @@ D' is a new commit on main with the same changes as D, but a different commit ha
 OTHER COMMANDS:
 - Cherry-picking multiple commits --> git cherry-pick commit1 commit2
 - A range of commits              --> git cherry-pick A..D
-
-------------------------------------------------------------------------------------
-git reset vs git revert?
-
-git reset:
-- moves the branch pointer to a previous commit, this can rewrite history
-- typically used for local commits
-- Risky on shared branches because others may already have those commits.
-
-git revert:
-- creates a new commit that reverses the changes of an earlier commit without modifying history
-- safer for shared branches
-- Original commit remains visible.
-- Commonly used after commits have been pushed.
-
-                                              git reset
-
-A --- B --- C --- D   (HEAD)
-
-git reset --hard B
-
-A --- B   (HEAD)
-
-                                              git revert
-
-
-A --- B --- C --- D   (HEAD)
-
-git revert D
-
-A --- B --- C --- D --- E   (HEAD)
-
-Where E contains the opposite changes of D.
 
 ------------------------------------------------------------------------------------
 How does Git integrate with CI/CD pipelines?
