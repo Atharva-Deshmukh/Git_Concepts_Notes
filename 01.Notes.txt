@@ -536,3 +536,99 @@ After squash merge:
 
                   A---B---C---G  master
 ------------------------------------------------------------------------------------
+What is a fast-forward merge?
+
+- Happens when the target branch has not changed since the feature branch was created.
+- In this case, Git does not create a new merge commit, it simply moves the branch pointer forward.
+
+Ex:
+
+Initial state:
+                        A --- B --- C   (main)
+
+Create feature branch and add commits:
+                        A --- B --- C   (main)
+                                      \
+                                      D --- E   (feature)
+
+After merge Result:
+
+                      A --- B --- C --- D --- E   (main, feature)
+
+Git simply moves main to point at E.
+This is called a fast-forward merge.
+
+When fast-forward is NOT possible:
+
+                        A --- B --- C --- F   (main)
+                                      \
+                                      D --- E   (feature)
+
+Since main has new commit F, Git must create a merge commit:
+
+                        A --- B --- C --- F ------- M   (main)
+                                      \           /
+                                      D --- E ---      (feature)
+
+This is a regular merge, not a fast-forward merge.
+
+------------------------------------------------------------------------------------
+What is `git stash`?
+
+- Command that temporarily saves uncommitted changes.
+- Useful when you need to switch branches, pull updates, or work on another task without 
+  committing incomplete work.
+
+Example:
+    git stash                       // saves all changes in working directory
+    git checkout another-branch    
+    ...
+    git checkout main
+    git stash pop                  // reverts all stashed changes
+
+------------------------------------------------------------------------------------
+What happens if two people modify the same file?
+
+- Git can usually merge the changes automatically as long as they edited different lines.
+- Merge conflicts otherwise
+
+------------------------------------------------------------------------------------
+What is git cherry-pick?
+
+- merge -> brings all branch history.
+- cherry-pick -> copies only selected commit(s).
+- A new commit is created on the target branch.
+
+Ex:
+
+                    main:
+                        A --- B --- C
+
+                    feature:
+                        A --- B --- C --- D --- E
+
+Suppose commit D contains an important bug fix and you want that fix in
+main without merging the entire feature branch.
+
+git log                  // Find the commit hash -> ex. d123abc  Fix login bug
+git checkout main        // Switch to main
+git cherry-pick d123abc  // Apply the commit
+
+Result:
+
+                  main:
+                      A --- B --- C --- D'
+
+                  feature:
+                      A --- B --- C --- D --- E
+
+D' is a new commit on main with the same changes as D, but a different
+commit hash.
+
+OTHER COMMANDS:
+
+Cherry-picking multiple commits --> git cherry-pick commit1 commit2
+
+Or a range                      --> git cherry-pick A..D
+
+------------------------------------------------------------------------------------

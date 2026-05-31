@@ -31,12 +31,8 @@ GitLab CI pipelines to ensure stability before production release.
 
 GIT FLOW and gitlab flow (probably used in our org)
 
-* What is `git stash`?
-* What is `git cherry-pick`?
 * What is the difference between `git reset` and `git revert`?
-* What is a fast-forward merge?
 * What is the purpose of Git tags?
-* What happens if two people modify the same file?
 * How does Git integrate with CI/CD pipelines?
 
 ---
