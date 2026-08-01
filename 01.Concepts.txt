@@ -1,768 +1,470 @@
-Git: Distributed version control system used to track changes in code
+Git
+- Distributed Version Control System (DVCS)
+- Tracks source code changes
+- Supports collaboration
+- Works offline
 
-------------------------------------------------------------------------------------
- Git Vs GitHub/GitLab?
+Git      -> Version Control Tool
+GitHub   -> Remote Repository Hosting
 
-              Git -->  version control system used locally.
-GitHub and GitLab -->  are cloud-based platforms that host Git repositories.
+Distributed Version Control System vs Centralised Version Control System
 
-------------------------------------------------------------------------------------
-Version control system: A tool that manages multiple versions of code, tracks changes, allowing teams to collaborate.
+CVCS
+- Central server
+- Internet required
+Ex: SVN, Perforce
 
-------------------------------------------------------------------------------------
-(CVCS) and (DVCS)
+DVCS
+- Full repository on every machine
+- Offline work possible
+Ex: Git
 
-Centralized version control system (CVCS):
-- there is a single central server that stores all versions of the code, and users  depend on that server. 
-- They need to connect to that server to get latest changes
-- Online work is there, no offline scope
+-------------------------------------------------------------------------------
+.gitignore
 
-  Ex:
-    - SVN (Apache Subversion)
-    - Perforce
-      Generally old legacy systems used these.
+Used to ignore files/folders that Git should not track.
 
-Distributed version control system (DVCS): 
-- every user has a complete local copy of the repository and its history, 
-- enables offline work and better collaboration.
-
-  Ex: Git
-
-------------------------------------------------------------------------------------
-What is `.gitignore`?
-
-A special file used in Git to specify which files and folders should be ignored (not tracked) by Git.
-
-Why use it?
-- Avoids uploading sensitive files such as passwords, API keys, or environment variables.
-
-Example:
-
-# Ignore node_modules folder
+Examples:
 node_modules/
-
-# Ignore environment file
 .env
-
-# Ignore build output
-dist/
 build/
+dist/
 
-------------------------------------------------------------------------------------
-Tracked Vs Untracked files?
+-------------------------------------------------------------------------------
+Tracked vs Untracked
 
-Tracked Files:
-- Files that Git is already monitoring (detects changes).
+Tracked   -> Git monitors the file
+Untracked -> Exists locally but Git doesn't track it
 
-Untracked Files:
-- Files that exist in the working directory but are not being monitored by Git.
+===============================================================================
+Commit Internals - What happens during git commit?
+===============================================================================
 
-------------------------------------------------------------------------------------
-git reset vs git revert?
+                                     Staging Area
+                                          |
+                                          v
+                                    Create Blob(s) (.git)
+                                          |
+                                          v
+                                    Create Commit Object
+                              (author, message, timestamp, parent)
+                                          |
+                                          v
+                                    Generate Commit Hash (SHA)
+                                          |
+                                          v
+                                    Branch & HEAD move to new commit
 
-git reset:
-- moves the branch pointer to a previous commit, this can rewrite history
-- typically used for local commits
-- Risky on shared branches because others may already have those commits.
+===============================================================================
+Branching & HEAD pointer
+===============================================================================
 
-                        A --- B --- C --- D   (HEAD)
+Branch
 
-                        git reset --hard B
+- Independent line of development.
+- Branch = Basically a Named pointer to latest commit, not a collection of commits
 
-                        A --- B   (HEAD)
+A --- B --- C
+            ^
+          main
 
-git revert:
-- creates a new commit that reverses the changes of an earlier commit without modifying history
-- safer for shared branches
-- Original commit remains visible.
-- Commonly used after commits have been pushed.
+main -> C
 
-                      A --- B --- C --- D   (HEAD)
+Git reconstructs history by following parent pointers.
+main points to C -> C points to B -> B points to A
 
-                      git revert D
+-------------------------------------------------------------------------------
+HEAD
 
-                      A --- B --- C --- D --- E   (HEAD)
+HEAD points to the currently checked-out branch.
 
-                      Where E contains the opposite changes of D.
+HEAD -> main -> latest_commit
 
-------------------------------------------------------------------------------------
-How do you undo the last commit?
+===============================================================================
+Detached HEAD
+===============================================================================
 
-                                    git reset --soft HEAD~1
+Occurs when checking out a commit instead of a branch.
 
-- Removes the commit + Keeps the changes staged
-- Used when we have to edit the last commit message or changes
+git checkout <commit>
 
-                                      git reset HEAD~1
+A --- B --- C
+            ^
+          HEAD
 
-- Removes the commit + unstages those changes
-- Changes can be seen using git status
+Normal:
+HEAD -> main -> C
 
-                                    git reset --hard HEAD~1
+Detached:
+HEAD -> C
 
-- Removes the commit + discard all changes
-- HEAD is moved to previous commit
+-------------------------------------------------------------------------------
+Commit in Detached HEAD
 
-------------------------------------------------------------------------------------
-How do you undo uncommitted changes?
+A --- B --- C --- D
+            ^     ^
+         main    HEAD
 
-Undo changes in a specific file --> git restore filename
-Undo changes in all tracked files --> git restore .
-git restore app.js --> This restores app.js to its last committed state.
+- HEAD moves to D
+- No branch points to D
+- D may become unreachable
 
-------------------------------------------------------------------------------------
-What is branching in Git?
+-------------------------------------------------------------------------------
+How to Return to Branch again -->  git switch main
 
-- Creating an independent line of development inside a repository. 
-- A branch is not actually a collection of commits.
-- Its just a named pointer (reference) to one commit — usually the latest commit in a line of development.
+A --- B --- C
+            ^
+          main
+            ^
+          HEAD
 
-  A --- B --- C
-                ^
-              main
+-------------------------------------------------------------------------------
+Keep Detached HEAD Commit
 
-            main is just a label storing: main = commit C
-            Nothing more.
+A --- B --- C
+      \
+        D
+        ^
+      HEAD
 
-            Commit C itself stores a pointer to B.
-            Commit B stores a pointer to A.
+git switch -c new-branch
 
-            So Git walks backward through history.
+===============================================================================
+Undo Changes -- git reset vs git revert
+===============================================================================
 
-------------------------------------------------------------------------------------
-What is HEAD in Git?
+git reset
+- Moves branch pointer backward
+- Rewrites history
+- Use for the Local commits only
 
-- HEAD is a pointer/reference to the currently checked-out commit.
-- Usually, HEAD points to a branch (like `main` or `feature/login`), and that branch points to the latest commit.
-- When you create a new commit, the branch moves forward, and HEAD moves with it.
+A --- B --- C --- D
 
-Example:
-    HEAD -> main -> commit abc123
+git reset --hard B
 
-------------------------------------------------------------------------------------
+A --- B
 
-What is a detached HEAD state?
+--------------------------------------------------
 
-  When we checkout a commit directly: git checkout <commit-hash>
-  HEAD no longer points to a branch.
+git revert
 
-  Instead: HEAD -> C directly.
-
-  So now:
-
-    A --- B --- C
-                ^
-               HEAD
-
-  No branch name is involved.
-
-                                      Why new commits become “dangling”?
-
-  If you commit now:
-
-    A --- B --- C --- D
-                        ^
-                      HEAD
-
-  Git creates commit D, and HEAD moves to it.
-  But no branch points to D.
-
-  Normally you'd have: main -> D
-
-  But in detached HEAD: HEAD -> D only temporarily.
-
-
-SOLUTION: If you detached HEAD by checking out an older commit, you can move back to the latest commit simply by
-checking out a branch again.
-
-Example situation:
-
-                                A --- B --- C   main
-                                      ^
-                                    HEAD
-
-You checked out commit B, so HEAD is detached.
-
-To return to the latest commit on main (C):
-    git switch main OR git checkout main
-
-Now:
-
-                                  A --- B --- C
-                                                ^
-                                              main
-                                                ^
-                                              HEAD
-
-HEAD is attached again.
-
-If you made commits while detached:
-
-                                  A --- B --- C
-                                        \
-                                          D
-                                          ^
-                                        HEAD
-
-Then switching to main leaves D unreferenced.
-
-To keep it: git switch -c new-branch 
-before leaving detached HEAD.
-
-------------------------------------------------------------------------------------
-What is the purpose of branching?
-
-  - Allow Collaboration
-  - Keep the main branch unaffected and PROD ready
-
-------------------------------------------------------------------------------------
-What is the default branch in Git?
-
-  Traditionally                      -->  "master"
-  Modern Git repositories after 2020 -->  "main"
-
-------------------------------------------------------------------------------------
-local Vs remote branches
-
-  Local Branch  --> Exists only on uers's computer
-  Remote Branch --> Exists on a remote repository like GitHub and shared with all users
-                    They are stored on server end
-
-------------------------------------------------------------------------------------
-How do you delete a branch locally and remotely?
-
-               Delete locally --> git branch -d branch_name
-  Force delete a local branch --> git branch -D branch_name
-       Delete a remote branch --> git push origin --delete branch_name
-
-       -d -> allows deletion if the branch has already been fully merged
-             means, all commits of <source_branch> must be at the <target_branch>
-
-            ex: 
-
-              git checkout main
-              git merge feature-login
-
-              After this merge, Git considers feature-login fully merged, so this works: git branch -d feature-login
-
-      -D -> Deletes the branch even if it contains unmerged changes.
-
-------------------------------------------------------------------------------------
-How do you rename a branch?
-
-  Current branch --> git branch -m <new_branch_name>
-  Another branch --> git branch -m <old_branch_name> <new_branch_name>
-
-------------------------------------------------------------------------------------
-What is the difference between clone and fork?
-
-  - Clone = local copy on your machine
-  - Fork = personal copy on a remote hosting platform
-
-------------------------------------------------------------------------------------
-What happens internally during `git commit`?
-
-  Git performs these steps:
-
-  1. Reads the staged files added using git add .
-  2. Creates blob (Binaly Large Objects) objects inside the `.git` directory
-  3. Creates a commit object with message and timestamp
-  4. Generates a unique commit hash (SHA)
-  5. HEAD moves to the latest commit
-  
-------------------------------------------------------------------------------------
-`git checkout` vs `git switch`?
-
-                                `git checkout`
-
-- Older command with multiple purposes:
-  - Switch branches
-  - Checkout commits/tags
-- Can be confusing because it does many unrelated tasks.
-
-Examples:
-    git checkout main
-    git checkout abc123
-    git checkout -- file.txt
-
-                                `git switch`
-
-- Used only for switching branches.
-
-Switch to an existing branch       --> git switch <branch-name>
-Create and switch to a new branch  --> git switch -c <new-branch-name>
-Toggle back to the previous branch --> git switch -
-
-
-Modern recommendation:
-- Use `git switch` for changing branches.
-- Use `git restore` for restoring files.
-
-------------------------------------------------------------------------------------
-What is `git log` used for?
-
-used to view the commit history of a Git repository. It displays commit IDs, authors, dates, and commit messages.
-
-Examples:
-git log               → Shows detailed commit history.
-git log --oneline     → Shows a compact one-line history.
-git log --graph --all → Displays commit history in graph form.
-
-------------------------------------------------------------------------------------
-What is `git diff` used for?
-
-- Used to view the differences (changes) between files, commits, branches
-
-| Command                          | Description                             |
-|----------------------------------|-----------------------------------------|
-| git diff                         | Shows unstaged changes.                 |
-| git diff --staged                | Shows staged changes.                   |
-| git diff HEAD                    | Shows all changes since the last commit.|
-| git diff commit1 commit2         | Compares two commits.                   |
-| git diff branch1 branch2         | Compares two branches.                  |
-| git diff filename                | Shows changes in a specific file.       |
-
-------------------------------------------------------------------------------------
-git pull vs git fetch
-
-| Feature                | git fetch                                                      | git pull                                                         |
-|-------------------------|----------------------------------------------------------------|------------------------------------------------------------------|
-| Purpose                 | Downloads latest changes from remote repository.              | Downloads and integrates latest changes from remote repository. |
-| Updates Local Branch    | No                                                            | Yes                                                              |
-| Merges Changes          | No                                                            | Yes (by default)                                                 |
-| Safe for Inspection     | Yes                                                           | Less safe because it modifies the current branch.                |
-| Working Directory       | Remains unchanged.                                            | May change after merge/rebase.                                   |
-| Typical Use Case        | Review remote changes before applying them.                   | Directly update your local branch with remote changes.           |
-
-Ex.
-
-              Remote Repository: A --- B --- C (origin/main)
-              Local Repository:  A --- B (main)
-
-                                        git fetch origin
-
-Local Branch:
-    A --- B (main)
-
-Remote Tracking Branch:
-    A --- B --- C (origin/main)
-
-What happens?
-- Commit C is downloaded.
-- Local branch still remains at B.
-- You can inspect changes before merging.
-
-Useful commands after fetch:
-
-    git log main..origin/main -> to see the commit differences
-    git diff main origin/main -> to see the actual File changes
-
-
-To merge these changes now, use git merge <branchname>
-
-
-                                          git pull origin main
-
-Result:
-
-A --- B --- C (main)
-
-What happens?
-- Downloads commit C.
-- Automatically merges (or rebases, depending on configuration).
-- Your local branch is updated immediately.
-
-git pull = git fetch + git merge
-
-------------------------------------------------------------------------------------
-GIT MERGE vs GIT REBASE
-
-MERGE  = Combine Histories
-REBASE = Rewrite History
-
-                                        GIT MERGE
-
-- Creates a new "merge commit" that combines the histories of two branches.
-
-Ex:
-
-Initial History:
-
-                          A---B---C  master
-                              \
-                                D---E  feature
-
-Commands:
-  git checkout master
-  git merge feature
-
-Result:
-
-                        A---B---C-------M  master
-                            \          /
-                              D---E---/    feature
-
-M = Merge Commit
-
-Characteristics:
-- Preserves complete branch history.
-- Shows exactly when branches were merged.
-- Non-destructive (does not rewrite commit history).
-- Preferred for shared/public branches.
-
-
-                                          GIT REBASE
-
-- Moves (replays) commits from one branch onto another base commit.
-
-Ex:
-
-Initial History:
-
-                              A---B---C  master
-                                  \
-                                    D---E  feature
-
-Command:
-  git checkout feature
-  git rebase master
-
-Result:
-
-                            A---B---C  master
-                                      \
-                                        D'---E'  feature
-
-D' and E' are NEW commits recreated on top of C.
-- Git is not literally shifting the same commits. It is creating new commits that contain the same changes.
-
-After merging:
-  git checkout master
-  git merge feature
-
-Result:
-
-A---B---C---D'---E'  master
-
-(No merge commit needed)
-
-Characteristics:
-- Produces a linear history.
-- Rewrites commit history.
-- Creates new commit hashes.
-
-Disadvantages:
-- Rewrites history.
-
-                                    Why is this dangerous?
-
-- When the branch is shared.
-
-Remote:
-  A---B---D---E  feature
-
-Alice and Bob both have this branch.
-
-Alice rebases
-  git rebase master
-  git push --force
-
-Remote becomes:
-  A---B---C---D'---E'  feature
-
-Now Bob still has:
-  A---B---D---E
-
-while remote has:
-  A---B---C---D'---E'
-
-Git sees D,E and D',E' as completely different commits.
-When Bob tries git pull, he gets conflicts
-
-------------------------------------------------------------------------------------
-What is a merge conflict?
-
-- Occurs when Git cannot automatically combine changes
-  from two branches because the same part of a file has been modified differently.
-
-------------------------------------------------------------------------------------
-How do you resolve merge conflicts?
-
-- Must manually choose the correct content, mark the file
-  as resolved, and then complete the merge or rebase process.
-
-------------------------------------------------------------------------------------
-What is a squash merge?
-
-- Combines all commits from a feature branch into a single commit before merging it into the target branch.
-
-Before squash merge:
-
-                    A---B---C  master
-                        \
-                          D---E---F  feature
-
-Commands:
-  git checkout master
-  git merge --squash feature
-  git commit
-
-After squash merge:
-
-                  A---B---C---G  master
-------------------------------------------------------------------------------------
-What is a fast-forward merge?
-
-- Happens when the target branch has not changed since the feature branch was created.
-- In this case, Git does not create a new merge commit, it simply moves the branch pointer forward.
-
-Ex:
-
-Initial state:
-                        A --- B --- C   (main)
-
-Create feature branch and add commits:
-                        A --- B --- C   (main)
-                                      \
-                                      D --- E   (feature)
-
-After merge Result:
-
-                      A --- B --- C --- D --- E   (main, feature)
-
-Git simply moves main to point at E.
-This is called a fast-forward merge.
-
-When fast-forward is NOT possible:
-
-                        A --- B --- C --- F   (main)
-                                      \
-                                      D --- E   (feature)
-
-Since main has new commit F, Git must create a merge commit:
-
-                        A --- B --- C --- F ------- M   (main)
-                                      \           /
-                                      D --- E ---      (feature)
-
-This is a regular merge, not a fast-forward merge.
-
-------------------------------------------------------------------------------------
-What is `git stash`?
-
-- Command that temporarily saves uncommitted changes.
-- Useful when you need to switch branches, pull updates, or work on another task without 
-  committing incomplete work.
-
-Example:
-    git stash                       // saves all changes in working directory
-    git checkout another-branch    
-    ...
-    git checkout main
-    git stash pop                  // reverts all stashed changes
-
-------------------------------------------------------------------------------------
-What happens if two people modify the same file?
-
-- Git can usually merge the changes automatically as long as they edited different lines.
-- Merge conflicts otherwise
-
-------------------------------------------------------------------------------------
-What is git cherry-pick?
-
-- merge -> brings all branch history.
-- cherry-pick -> copies only selected commit(s).
-- A new commit is created on the target branch.
-
-Ex:
-
-                    main:
-                        A --- B --- C
-
-                    feature:
-                        A --- B --- C --- D --- E
-
-Suppose commit D contains an important bug fix and you want that fix in
-main without merging the entire feature branch.
-
-git log                  // Find the commit hash -> ex. d123abc  Fix login bug
-git checkout main        // Switch to main
-git cherry-pick d123abc  // Apply the commit
-
-Result:
-
-                  main:
-                      A --- B --- C --- D'
-
-                  feature:
-                      A --- B --- C --- D --- E
-
-D' is a new commit on main with the same changes as D, but a different commit hash.
-
-OTHER COMMANDS:
-- Cherry-picking multiple commits --> git cherry-pick commit1 commit2
-- A range of commits              --> git cherry-pick A..D
-
-------------------------------------------------------------------------------------
-How does Git integrate with CI/CD pipelines?
-
-- by serving as the source-control system that triggers automated workflows whenever code is pushed,
-  merged, or tagged
-- CI tools ->  build and test the code,
-- CD tools ->  deploy validated changes to staging or production environments
-
-                          Developer creates Pull Request
-                                      |
-                                      v
-                          CI Pipeline Runs
-                                      |
-                              -----------------
-                              |               |
-                          Tests Pass     Tests Fail
-                              |               |
-                              v               v
-                          Merge PR       Fix Issues
-                              |
-                              v
-                          CD Pipeline Deploys
-
-------------------------------------------------------------------------------------
-Branch protection:
-- a Git repository feature that prevents direct or unsafe changes to important branches such as main/master
-- purpose is to prevent accidental changes
-
-Common Branch Protection Rules: 
-
-1. Prevent Direct Pushes
-- Developers cannot push directly to the protected branch.
-- Instead, they use a feature branch and a Pull Request (PR).
-- The Pull Request goes through:
-    Code review
-    CI/CD checks
-    Approval process
-
-After all checks pass, GitHub/GitLab/Bitbucket performs the merge.
-
-2. Restrict Branch Deletion -> Prevents accidental deletion of important branches.
-
-------------------------------------------------------------------------------------
-What is the purpose of Git tags?
-
-- used to mark specific commits as important milestones, typically releases or version points.
-- make it easy to identify and return to a particular version of the codebase.
+- Creates a new commit that reverses the previous changes
+- Safe for shared branches
 
 A --- B --- C --- D --- E
 
-Suppose commit D is the first production release.
+E = Reverse of D
+
+===============================================================================
+Undo Last Commit
+===============================================================================
+
+git reset --soft HEAD~1   --> VS Code's Undo last commit
+- Removes the commit
+- But Keep changes STAGED
+
+git reset HEAD~1
+- Removes the commit
+- Keep changes UNSTAGED
+
+git reset --hard HEAD~1
+- Removes the commit
+- Discards the changes
+
+-------------------------------------------------------------------------------
+Undo Uncommitted Changes
+
+git restore file
+git restore .
+
+===============================================================================
+Branch Operations
+===============================================================================
+
+Create Branch
+  git switch -c feature
+
+Switch Branch
+  git switch main
+
+Delete Branch
+  git branch -d branch
+
+Force Delete
+  git branch -D branch
+
+Delete Remote Branch
+  git push origin --delete branch
+
+===============================================================================
+Clone vs Fork
+===============================================================================
+
+Clone Creates a Local copy on User's machine
+
+Fork Creates a Personal remote copy on the cloud repo
+
+===============================================================================
+Fetch vs Pull
+===============================================================================
+
+git fetch
+- Downloads remote changes
+- Doesn't modify current local branch but updates the remote-tracking branch
+
+            Remote
+            A --- B --- C
+
+Local
+A --- B
+
+origin/main
+A --- B 
+
+After fetch
+
+Local
+A --- B
+
+origin/main
+A --- B --- C
+
+--------------------------------------------------
+
+git pull
+
+git fetch + git merge
+
+Remote
+A --- B --- C
+
+Local
+
+A --- B --- C
+
+===============================================================================
+Merge vs Rebase
+===============================================================================
+
+MERGE
+- Combines histories
+- Creates Merge Commit
+- Doesn't rewrite history
+
+A---B---C
+    \
+     D---E
+
+Merge
+
+A---B---C------M
+    \         /
+     D---E---/
+
+--------------------------------------------------
+
+REBASE
+
+- Replays commits
+- Linear history
+- Rewrites history
+
+Before
+
+A---B---C
+    \
+     D---E
+
+After
+
+A---B---C
+          \
+           D'---E'
+
+Never rebase shared branches.
+
+===============================================================================
+Merge Types
+===============================================================================
+
+Fast Forward
+
+A fast-forward merge happens when the target branch has no new commits since the feature branch was created.
+Instead of creating a merge commit, Git simply moves the branch pointer forward.
+
+A---B---C
+         \
+          D---E
+
+Result
+
+A---B---C---D---E
+
+Command: 
+  git merge feature
+
+--------------------------------------------------
+
+Squash Merge
+
+A squash merge combines all commits from a feature branch into a single commit before merging it into the target branch.
+
+A---B---C
+    \
+     D---E---F
+
+Result
+
+A---B---C---G
+
+G = Single Squashed Commit
+
+Command:
+  git merge --squash feature
+
+-------------------------------------------------------------------------------
+Merge Conflict
+
+Occurs when the same lines are modified differently.
+
+Resolve:
+- Edit file
+- git add
+- Complete merge/rebase
+
+===============================================================================
+Useful Commands
+===============================================================================
+
+git log
+git log --oneline
+git log --graph --all
+
+--------------------------------------------------
+
+git diff                    -->      Compares Working Directory  <->  Staging Area (Index)
+git diff --staged           -->      Compares Staging Area  <->  Last Commit (HEAD)
+git diff HEAD               -->      Compares Working Directory + Staging Area  <->  HEAD
+git diff commit1 commit2    -->      Compares any two commits
+git diff main feature       -->      Compares any two branches
+
+-------------------------------------------------------------------------------
+git stash
+
+Temporarily saves uncommitted changes.
+
+git stash
+git stash pop
+
+-------------------------------------------------------------------------------
+git cherry-pick
+
+Copies selected commit(s) to another branch.
+
+main
+A---B---C
+
+feature
+A---B---C---D---E
+
+git cherry-pick D
+
+main
+A---B---C---D'
+
+===============================================================================
+Remote Collaboration
+===============================================================================
+
+CI/CD Flow
+
+                            Developer
+                              |
+                              v
+                        Pull/Merge Request
+                              |
+                              v
+                              CI
+                              |
+                          Tests Pass
+                              |
+                              v
+                            Merge
+                              |
+                              v
+                            Deploy
+
+-------------------------------------------------------------------------------
+Branch Protection
+
+- Prevents direct pushes to the main/master
+- Require PR/MR review
+- Require CI checks like pipeline pass
+- Prevents branch deletion
+
+===============================================================================
+Git Tags
+===============================================================================
+
+Tag = Named reference to a commit -> Helps to remember the commit pushed during releases specifically
+      Unlike a branch, a tag never moves.
+
 
 git tag v1.0.0 D
 
-A --- B --- C --- D(v1.0.0) --- E
+A --- B --- C --- D(v1.0.0) --- E -- F -- G
 
-Now you can easily reference that release.
-
------------------------------------------------------------------------------------- 
-Gitflow and Gitlab flow
-
-- They are basically the branching models on github and gitlab
-
-                                                Gitflow
-
-Main branches:
-
-    main/master
-    develop
-
-Supporting branches:
-
-    feature/*
-    release/*
-    hotfix/*
-
-Structure:
-
-                                              feature/login
-                                            /
-                            main -------- develop -------- feature/payment
-                                            \
-                                            release/1.0
-                                                \
-                                                  hotfix/1.0.1
-
-How it works
-
-1. Create feature branch from develop
-
-    develop
-       |
-       +--> feature/login
-
-2. Complete feature and merge back to develop
-
-3. When preparing a release:
-
-    develop
-       |
-       +--> release/1.0
-
-4. After testing:
-
-    release/1.0
-         |           
-         +--> main                   --. merge in both main and develop branches
-         +--> develop
-
-5. Production bug?
-
-    main
-      |
-      +--> hotfix/1.0.1
-
-After fix:
-
-    hotfix
-      |
-      +--> main      (fix production immediately)
-      +--> develop   (keep future releases consistent)
+main moves to G
+Tag stays on D
 
 
-                                        Gitlab flow
-                                  
-- Every branch is taken from main Branch
+MAJOR USECASE:
 
-                            Feature Branch
-                                  |
-                                  v
-                            Merge Request
-                                  |
-                                  v
-                              CI/CD
-                                  |
-                                  v
-                                main
-                                  |
-                                  v
-                              Production
+Imagine production crashes.
 
-------------------------------------------------------------------------------------  
-BRANCHING STRATEGY AT THE CURRENT ORGANISATION
+Current history:
+
+  A --- B --- C(v1.0.0) --- D --- E --- F(v2.0.0)
+
+You can immediately go back to the exact code released as v1.0.0:
+
+  git checkout v1.0.0
+
+No need to remember the commit hash.
 
 
-- Environment-based branching and deployment flow.
+Create a tag on current commit
+  git tag v1.0.0
 
-- Developers usually work on feature branches and merge changes into 
-  the development branch after review and validation.
+Create a tag on a specific commit
+  git tag v1.0.0 <commit-hash>
 
-- The deployment pipeline ==> dev -> feature-int -> prod-int -> prod
+List tags
+  git tag
 
-- dev --> Initial development and basic validation.
+Checkout a tag
+  git checkout v1.0.0
 
-- feature-int: --> Integration testing environment where multiple features are 
-                   validated together.
+Push a tag
+  git push origin v1.0.0
 
-- prod-int:    --> Pre-production/staging environment used for regression, 
-                   stability, and release validation.
+Push all tags
+  git push --tags
 
-- prod:        --> Production release environment.
+===============================================================================
+Branching Strategy (Typical Company)
+===============================================================================
 
-------------------------------------------------------------------------------------  
+                  feature_branch
+                        |
+                        v
+                  pushed to dev
+                        |
+                        v
+                pushed to feature-int
+                        |
+                        v
+                  pushed to prod-int
+                        |
+                        v
+                      prod
