@@ -1,17 +1,17 @@
 You accidentally pushed code directly to the main branch. What will you do?
 
-- If the commit is already shared, I would avoid rewriting history and use
-  git revert to create a new commit that undoes the changes. 
-- If the commit has not been shared, I may use git reset and force-push after team
-  agreement.
+- Shared commit  -> git revert -> this will add a new commit that reverts my changes
+- Not shared     -> git reset + force push (only with team approval)
+
+Never rewrite history on shared branches.
 
 ------------------------------------------------------------
-You committed secrets/API keys accidentally. What will you do?
+You accidentally committed secrets/API keys. What will you do?
 
-- I would immediately revoke or rotate the exposed credentials. 
-- Then I would remove the secrets from the repository, force-push the cleaned
-  history, and notify the team. 
-- Secrets should never remain valid even if removed from Git.
+- Revoke/rotate the credentials immediately.
+- Remove them from Git history.
+- Force-push the cleaned history.
+- Notify the team.
 
 ------------------------------------------------------------
 CI is failing after your commit but tests pass locally. What could be the reasons?
@@ -35,15 +35,18 @@ git stash.
 ------------------------------------------------------------
 Your PR contains many unnecessary commits. How will you clean it?
 
+Suppose you worked on a feature and kept committing frequently. When you open a PR, reviewers see 5 commits, but only 2 are meaningful.
+You can clean them using interactive rebase
+
 I would use interactive rebase.
 
-    git rebase -i HEAD~N
+    git rebase -i HEAD~N --> Look back at last N commits
 
 ------------------------------------------------------------
 A teammate force-pushed changes and your local branch history became inconsistent. What will you do?
 
     git fetch origin
-    git reset --hard origin/main
+    git reset --hard origin/main  --> Moves your current branch to exactly match origin/main, discarding any local changes.
 
 ------------------------------------------------------------
 You accidentally deleted a branch. Can it be recovered?
@@ -77,7 +80,6 @@ What happens if you rebase a shared branch?
 How do you keep long-running feature branches updated?
 
 - regularly synchronize them with main resolve
-- run regression tests
 - avoid keeping branches open for very long periods.
 
 ------------------------------------------------------------
@@ -111,8 +113,7 @@ What is the safest way to undo changes already pushed to remote?
 ------------------------------------------------------------
 What happens if you run git pull with local uncommitted changes?
 
-- If local branch has no changes, then merge happens
-- else changes are prevented and saving current changes is recommended 
+- changes are prevented and saving current changes is recommended 
 
 ------------------------------------------------------------
 How do you investigate who introduced a breaking change?
@@ -121,17 +122,10 @@ How do you investigate who introduced a breaking change?
   in which commit the change was made.
 
 ------------------------------------------------------------
-How do you identify which commit caused a regression?
-
-- use git bisect command to identify that commit
-- one commit is marked good and one commit is marked bad here
-- internally, it uses a binary search through commit history to quickly identify the issue
-
-------------------------------------------------------------
 What would you do if Git history becomes messy after multiple merges?
 
 - encourage squash merges
-- maintain branch disciplineavoid
+- maintain branch discipline
 - avoid unnecessary merge commits.
 
 ------------------------------------------------------------
