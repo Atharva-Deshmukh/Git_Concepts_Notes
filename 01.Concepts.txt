@@ -7,6 +7,7 @@ Git
 Git      -> Version Control Tool
 GitHub   -> Remote Repository Hosting
 
+-------------------------------------------------------------------------------
 Distributed Version Control System vs Centralised Version Control System
 
 CVCS
@@ -22,7 +23,7 @@ Ex: Git
 -------------------------------------------------------------------------------
 .gitignore
 
-Used to ignore files/folders that Git should not track.
+Used to ignore files/folders that Git do not track.
 
 Examples:
 node_modules/
@@ -212,7 +213,7 @@ Commands:
   git remote add origin URL
 
 ===============================================================================
-Undo Changes -- git reset vs git revert
+git reset vs git revert -- Undo changes
 ===============================================================================
 
 git reset
@@ -238,14 +239,14 @@ A --- B --- C --- D --- E
 E = Reverse of D
 
 ===============================================================================
-Undo Last Commit
+Undo Last Commit (soft, mixed and hard)
 ===============================================================================
 
 git reset --soft HEAD~1   --> VS Code's Undo last commit
 - Removes the commit
 - But Keep changes STAGED
 
-git reset HEAD~1
+git reset HEAD~1  OR git reset --mixed HEAD~1 --> mixed is the default mode
 - Removes the commit
 - Keep changes UNSTAGED
 
@@ -426,9 +427,7 @@ because Git has no choice.
 
 git merge --no-ff feature
 
-This tells Git:
-
-"Even if a fast-forward merge is possible, don't do it. Always create a merge commit."
+This tells Git --> "Even if a fast-forward merge is possible, don't do it. Always create a merge commit."
 
 Before
 A --- B --- C (main)
