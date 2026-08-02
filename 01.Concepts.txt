@@ -56,6 +56,38 @@ Commit Internals - What happens during git commit?
                                     Branch & HEAD move to new commit
 
 ===============================================================================
+Git file states
+===============================================================================
+
+                      Untracked
+                          |
+                       git add
+                          |
+                          v
+                       Staged
+                          |
+                      git commit
+                          |
+                          v
+                      Committed
+                          |
+                       Modify
+                          |
+                          v
+                       Modified
+
+
+                       Working Directory
+                              |
+                          git add
+                              |
+                         Staging Area
+                              |
+                         git commit
+                              |
+                        Local Repository
+
+===============================================================================
 Branching & HEAD pointer
 ===============================================================================
 
@@ -128,6 +160,56 @@ A --- B --- C
       HEAD
 
 git switch -c new-branch
+
+===============================================================================
+Git status
+===============================================================================
+
+git status
+
+Shows
+
+  - Current branch
+  - Modified files
+  - Staged files
+  - Untracked files
+  - Merge conflicts
+
+  Sample output:
+
+  $ git status
+  On branch master
+  Your branch is up to date with 'origin/master'.
+
+  Changes to be committed:
+    (use "git restore --staged <file>..." to unstage)
+          modified:   02.ScenarioBasedQuestions.txt
+
+  Changes not staged for commit:
+    (use "git add <file>..." to update what will be committed)
+    (use "git restore <file>..." to discard changes in working directory)
+          modified:   01.Concepts.txt
+
+
+===============================================================================
+Git origin
+===============================================================================
+
+Default name of remote repository.
+
+git clone ...
+
+↓
+
+origin
+
+↓
+
+https://github.com/company/project.git
+
+Commands:
+  git remote -v
+  git remote add origin URL
 
 ===============================================================================
 Undo Changes -- git reset vs git revert
@@ -303,7 +385,75 @@ A---B---C---D---E
 Command: 
   git merge feature
 
---------------------------------------------------
+--------------------------------------------------------------------------------------
+NOTE: git merge --no-ff feature
+
+Command
+  git checkout main
+  git merge feature
+
+Git decides automatically if a fast-forward merge is possible, Git performs it.
+
+Before
+A --- B --- C (main)
+               \
+                D --- E (feature)
+
+Result
+
+A --- B --- C --- D --- E (main)
+
+✔ No merge commit is created.
+
+Git simply moves the main pointer from C to E.
+
+If fast-forward isn't possible:
+
+A --- B --- C --- F (main)
+               \
+                D --- E (feature)
+
+Then the same command -> git merge feature
+
+creates
+
+A --- B --- C --- F ------ M
+               \          /
+                D --- E --
+
+because Git has no choice.
+
+
+git merge --no-ff feature
+
+This tells Git:
+
+"Even if a fast-forward merge is possible, don't do it. Always create a merge commit."
+
+Before
+A --- B --- C (main)
+               \
+                D --- E (feature)
+
+Command
+  git checkout main
+  git merge --no-ff feature
+
+Result
+
+A --- B --- C -------- M (main)
+               \      /
+                D --- E
+
+Notice:
+
+Merge commit M exists.
+Git intentionally preserves the feature branch history.
+
+Use of git merge --no-ff feature:
+  Easier to revert an entire feature.
+  Better release history.
+--------------------------------------------------------------------------------------
 
 Squash Merge
 
